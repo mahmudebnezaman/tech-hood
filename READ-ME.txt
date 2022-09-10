@@ -1,11 +1,11 @@
-  =>  Template Name    : MultiShop - Online Shop Website Template
+  =>  Template Name    : Tech Hood IT solution (Online shop website).
 
-  =>  Template Link    : https://htmlcodex.com/online-shop-website-template
+  =>  Template License : None. It's open for development and further uses, both personal and commercial (Read the LICENSE.txt file)
 
-  =>  Template License : https://htmlcodex.com/license (or read the LICENSE.txt file)
+  =>  Template Author  : Team PaperFly
 
-  =>  Template Author  : HTML Codex
+  =>  Author Website   : https://info@paper-fly.com
 
-  =>  Author Website   : https://htmlcodex.com
+  =>  About Team PaperFly : Team PaperFly is small group of IT enthusiasts. Currently consisting of three pupil who are pursuing their bachelor studies under Computer Science major, this team is evolving as the developers are constantly learning about new topics in new courses and apply them in various implementations. This project has been an attempt to learn about HTML CSS apply them in direct implementation for the course Web Engineering. Read more at ( https:// )
 
-  =>  About HTML Codex : HTML Codex is one of the top creators and publishers of Free HTML templates, HTML landing pages, HTML email templates and HTML snippets in the world. Read more at ( https://htmlcodex.com/about-us )
+  
