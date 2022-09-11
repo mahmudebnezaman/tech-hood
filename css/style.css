@@ -4545,17 +4545,25 @@ input[type="button"].btn-block {
 
 .breadcrumb-item {
   display: flex;
+  
 }
 
 .breadcrumb-item + .breadcrumb-item {
   padding-left: 0.5rem;
+  background-color: #fff;
 }
 
 .breadcrumb-item + .breadcrumb-item::before {
   display: inline-block;
+  background-color: #fff;
   padding-right: 0.5rem;
   color: #6c757d;
   content: "/";
+}
+.breadcrumb-item + .breadcrumb-item::after {
+  display: inline-block;
+  padding-right: 0.5rem;
+  content: "";
 }
 
 .breadcrumb-item + .breadcrumb-item:hover::before {
