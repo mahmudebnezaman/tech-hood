@@ -1,3 +1,94 @@
+<?php
+// Initialize the session
+session_start();
+ 
+// Check if the user is already logged in, if yes then redirect him to welcome page
+if(isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true){
+    header("location: welcome.php");
+    exit;
+}
+ 
+// Include config file
+require_once "config.php";
+ 
+// Define variables and initialize with empty values
+$username = $password = "";
+$username_err = $password_err = $login_err = "";
+ 
+// Processing form data when form is submitted
+if($_SERVER["REQUEST_METHOD"] == "POST"){
+ 
+    // Check if username is empty
+    if(empty(trim($_POST["username"]))){
+        $username_err = "Please enter username.";
+    } else{
+        $username = trim($_POST["username"]);
+    }
+    
+    // Check if password is empty
+    if(empty(trim($_POST["password"]))){
+        $password_err = "Please enter your password.";
+    } else{
+        $password = trim($_POST["password"]);
+    }
+    
+    // Validate credentials
+    if(empty($username_err) && empty($password_err)){
+        // Prepare a select statement
+        $sql = "SELECT id, username, password FROM users WHERE username = ?";
+        
+        if($stmt = mysqli_prepare($link, $sql)){
+            // Bind variables to the prepared statement as parameters
+            mysqli_stmt_bind_param($stmt, "s", $param_username);
+            
+            // Set parameters
+            $param_username = $username;
+            
+            // Attempt to execute the prepared statement
+            if(mysqli_stmt_execute($stmt)){
+                // Store result
+                mysqli_stmt_store_result($stmt);
+                
+                // Check if username exists, if yes then verify password
+                if(mysqli_stmt_num_rows($stmt) == 1){                    
+                    // Bind result variables
+                    mysqli_stmt_bind_result($stmt, $id, $username, $hashed_password);
+                    if(mysqli_stmt_fetch($stmt)){
+                        if(password_verify($password, $hashed_password)){
+                            // Password is correct, so start a new session
+                            session_start();
+                            
+                            // Store data in session variables
+                            $_SESSION["loggedin"] = true;
+                            $_SESSION["id"] = $id;
+                            $_SESSION["username"] = $username;                            
+                            
+                            // Redirect user to welcome page
+                            header("location: welcome.php");
+                        } else{
+                            // Password is not valid, display a generic error message
+                            $login_err = "Invalid username or password.";
+                        }
+                    }
+                } else{
+                    // Username doesn't exist, display a generic error message
+                    $login_err = "Invalid username or password.";
+                }
+            } else{
+                echo "Oops! Something went wrong. Please try again later.";
+            }
+
+            // Close statement
+            mysqli_stmt_close($stmt);
+        }
+    }
+    
+    // Close connection
+    mysqli_close($link);
+}
+?>
+ 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,14 +133,13 @@
                     <a href="about.html"class="btn btn-sm btn-light">About</a>
                     <a href="contact.html"class="btn btn-sm btn-light">Contact</a>
                     <a href="faq.html"class="btn btn-sm btn-light">FAQs</a>
-                    <a href="signin.html"class="btn btn-sm btn-light">Account</a>
-                    <!-- <div class="btn-group">
+                    <div class="btn-group">
                         <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown">My Account</button>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <button class="dropdown-item" type="button">Sign in</button>
-                            <button class="dropdown-item" type="button">Sign up</button>
+                            <a href="login.php"><button class="dropdown-item" type="button">Sign in</button></a>
+                            <a href="register.php"><button class="dropdown-item" type="button">Sign up</button></a>
                         </div>
-                    </div> -->
+                    </div>
                     <div class="btn-group mx-2">
                         <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-toggle="dropdown">BDT</button>
                         <div class="dropdown-menu dropdown-menu-right">
@@ -233,7 +323,7 @@
                     <div class="collapse navbar-collapse justify-content-between" id="navbarCollapse">
                         <div class="navbar-nav mr-auto py-0">
                             <a href="index.html" class="nav-item nav-link">Home</a>
-                            <a href="detail.html" class="nav-item nav-link">Product Detail</a>
+                            <a href="shop.html" class="nav-item nav-link">New Products</a>
                         </div>
                         <div class="col-lg-4 col-6 text-left">
                             <form action="">
@@ -279,53 +369,36 @@
 
     <!-- Breadcrump End -->
 
-    
-    <div class="wrapper">
-        <div class="title-text">
-          <div class="title login">Login Form</div>
-          <div class="title signup">Signup Form</div>
-        </div>
-        <div class="form-container">
-          <div class="slide-controls">
-            <input type="radio" name="slide" id="login" checked>
-            <input type="radio" name="slide" id="signup">
-            <label for="login" class="slide login">Login</label>
-            <label for="signup" class="slide signup">Signup</label>
-            <div class="slider-tab"></div>
-          </div>
-          <div class="form-inner">
-            <form action="#" class="login">
-              <div class="field">
-                <input type="text" placeholder="Email Address" required>
-              </div>
-              <div class="field">
-                <input type="password" placeholder="Password" required>
-              </div>
-              <div class="pass-link"><a href="#">Forgot password?</a></div>
-              <div class="field btn">
-                <div class="btn-layer"></div>
-                <input type="submit" value="Login">
-              </div>
-              <div class="signup-link">Not a member? <a href="">Signup now</a></div>
-            </form>
-            <form action="#" class="signup">
-              <div class="field">
-                <input type="text" placeholder="Email Address" required>
-              </div>
-              <div class="field">
-                <input type="password" placeholder="Password" required>
-              </div>
-              <div class="field">
-                <input type="password" placeholder="Confirm password" required>
-              </div>
-              <div class="field btn">
-                <div class="btn-layer"></div>
-                <input type="submit" value="Signup">
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+    <div class="wrapper form-container">
+        <h2>Login</h2>
+        <p>Please fill in your credentials to login.</p>
+
+        <?php 
+        if(!empty($login_err)){
+            echo '<div class="alert alert-danger">' . $login_err . '</div>';
+        }        
+        ?>
+
+        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" class="form-control <?php echo (!empty($username_err)) ? 'is-invalid' : ''; ?>" value="<?php echo $username; ?>">
+                <span class="invalid-feedback"><?php echo $username_err; ?></span>
+            </div>    
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" class="form-control <?php echo (!empty($password_err)) ? 'is-invalid' : ''; ?>">
+                <span class="invalid-feedback"><?php echo $password_err; ?></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="Login">
+            </div>
+            <p>Don't have an account? <a href="register.php">Sign up now</a>.</p>
+        </form>
+    </div>
+
+
+
 
 <!-- Footer Start -->
 <div class="container-fluid bg-dark text-secondary mt-5 pt-5">
